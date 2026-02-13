@@ -6,13 +6,10 @@
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 </head>
 <body>
-
 <h2>載入中...</h2>
 
 <script>
-
 async function main() {
-
   await liff.init({ liffId: "2009110865-FvR3qo6e" });
 
   if (!liff.isLoggedIn()) {
@@ -28,7 +25,8 @@ async function main() {
   const utm_campaign = params.get("utm_campaign");
   const utm_content = params.get("utm_content");
 
-  await fetch("https://script.google.com/macros/s/AKfycbzJ_z6bEn4JvFmcf1Q_Gv1EKP2y0IJmqs25uEb9nctT1BpPciu9rxjsjdsIHeN0XQQY/exec", {
+  // POST 到 GAS
+  await fetch("你的GAS Web App URL", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -39,8 +37,8 @@ async function main() {
     })
   });
 
+  // 判斷是否為好友
   const friendship = await liff.getFriendship();
-
   if (!friendship.friendFlag) {
     liff.openWindow({
       url: "https://line.me/R/ti/p/@jbcare",
@@ -49,11 +47,9 @@ async function main() {
   } else {
     document.body.innerHTML = "<h2>已是好友 ✅</h2>";
   }
-
 }
 
 main();
-
 </script>
 
 </body>
