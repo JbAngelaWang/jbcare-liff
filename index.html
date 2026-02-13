@@ -45,22 +45,22 @@ async function main() {
     });
 
     // 判斷是否為好友
-    const friendship = await liff.getFriendship();
-    if (!friendship.friendFlag) {
-      liff.openWindow({
-        url: "https://line.me/R/ti/p/@jbcare",
-        external: true
-      });
-      document.getElementById("status").innerText = "跳轉加好友頁...";
-    } else {
-      document.getElementById("status").innerText = "已是好友 ✅";
-    }
+//    const friendship = await liff.getFriendship();
+//    if (!friendship.friendFlag) {
+//      liff.openWindow({
+//        url: "https://line.me/R/ti/p/@jbcare",
+//        external: true
+//      });
+//      document.getElementById("status").innerText = "跳轉加好友頁...";
+//    } else {
+//      document.getElementById("status").innerText = "已是好友 ✅";
+//    }
 
-  } catch (error) {
-    console.error(error);
-    document.getElementById("status").innerText = "發生錯誤，請稍後再試 ❌";
-  }
-}
+//  } catch (error) {
+//    console.error(error);
+//    document.getElementById("status").innerText = "發生錯誤，請稍後再試 ❌";
+//  }
+//}
 
 // 啟動
 main();
