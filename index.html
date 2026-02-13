@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="utf-8">
-  <title>JB Care LIFF 最終版 GET</title>
-  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-  <style>
-    body { font-family: Arial; text-align: center; padding-top: 50px; }
-    h2 { color: #333; }
-  </style>
+<meta charset="utf-8">
+<title>JB Care LIFF GET 最終版</title>
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<style>
+body { font-family: Arial; text-align: center; padding-top: 50px; }
+h2 { color: #333; }
+</style>
 </head>
 <body>
 
@@ -32,7 +32,7 @@ async function main() {
     const utm_campaign = params.get("utm_campaign") || "";
     const utm_content = params.get("utm_content") || "";
 
-    // 用 GET 傳資料避免 CORS
+    // GET URL 傳資料到 Google Sheet
     const url = 'https://script.google.com/macros/s/AKfycbxBh6o0xQSJl0AvKfgQAFDwQ_LVRRYIMb5Wdy_8S02WG8ih5R101IdMARsrTIm3Ht_9/exec'
       + '?userId=' + encodeURIComponent(userId)
       + '&utm_source=' + encodeURIComponent(utm_source)
@@ -45,11 +45,11 @@ async function main() {
       statusEl.innerText = "資料已成功送出 ✅";
     } catch(fetchErr) {
       console.error("傳送資料錯誤:", fetchErr);
-      statusEl.innerText = "資料送出失敗 ❌，請查看 console傳送資料錯誤";
+      statusEl.innerText = "資料送出失敗 ❌，請查看 console";
       return;
     }
 
-    // 判斷好友
+    // 好友判斷
     try {
       const friendship = await liff.getFriendship();
       if (!friendship.friendFlag) {
@@ -61,12 +61,12 @@ async function main() {
       }
     } catch(friendErr) {
       console.error("好友判斷錯誤:", friendErr);
-      statusEl.innerText = "好友判斷失敗 ❌，請查看 console判斷好友";
+      statusEl.innerText = "好友判斷失敗 ❌，請查看 console";
     }
 
   } catch(err) {
     console.error("LIFF 初始化錯誤:", err);
-    statusEl.innerText = "LIFF 初始化失敗 ❌，請查看 consoleLIFF 初始化錯誤";
+    statusEl.innerText = "LIFF 初始化失敗 ❌，請查看 console";
   }
 }
 
