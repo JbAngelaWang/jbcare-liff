@@ -2,12 +2,11 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>JB Care LIFF 完整版</title>
+  <title>JB Care LIFF 最終版</title>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <style>
     body { font-family: Arial, sans-serif; text-align: center; padding-top: 50px; }
     h2 { color: #333; }
-    button { padding: 10px 20px; font-size: 16px; margin-top: 20px; }
   </style>
 </head>
 <body>
@@ -20,6 +19,7 @@ async function main() {
     // 初始化 LIFF
     await liff.init({ liffId: "2009110865-FvR3qo6e" });
 
+    // 如果沒登入 LINE，跳登入
     if (!liff.isLoggedIn()) {
       liff.login();
       return;
@@ -39,8 +39,8 @@ async function main() {
 
     console.log("送出資料:", { userId, utm_source, utm_campaign, utm_content });
 
-    // POST 到 Google Sheet Web App
-    await fetch("https://script.google.com/macros/s/AKfycbwa1GZ4pJPlfTgjWWs7M2Bt50MBJALZl_9S_Adx_wvb9B3GxdIqCY3HQdr3bFh4kzI/exec", {   // <-- 改成你的 Web App URL
+    // POST 到你的 Google Sheet Web App
+    await fetch("https://script.google.com/macros/s/AKfycbwa1GZ4pJPlfTgjWWs7M2Bt50MBJALZl_9S_Adx_wvb9B3GxdIqCY3HQdr3bFh4kzI/exec", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ userId, utm_source, utm_campaign, utm_content })
@@ -61,7 +61,7 @@ async function main() {
     }
 
   } catch (error) {
-    console.error(error);
+    console.error("錯誤訊息:", error);
     document.getElementById("status").innerText = "發生錯誤 ❌，請檢查 console";
   }
 }
