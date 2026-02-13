@@ -2,10 +2,16 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>JB Care LIFF Tracker 測試版</title>
+  <title>JB Care LIFF 完整版</title>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; padding-top: 50px; }
+    h2 { color: #333; }
+    button { padding: 10px 20px; font-size: 16px; margin-top: 20px; }
+  </style>
 </head>
 <body>
+
 <h2 id="status">載入中...</h2>
 
 <script>
@@ -14,7 +20,6 @@ async function main() {
     // 初始化 LIFF
     await liff.init({ liffId: "2009110865-FvR3qo6e" });
 
-    // 如果沒登入 LINE，跳登入
     if (!liff.isLoggedIn()) {
       liff.login();
       return;
@@ -32,19 +37,28 @@ async function main() {
     const utm_campaign = params.get("utm_campaign") || "";
     const utm_content = params.get("utm_content") || "";
 
+    console.log("送出資料:", { userId, utm_source, utm_campaign, utm_content });
+
     // POST 到 Google Sheet Web App
     await fetch("https://jbangelawang.github.io/jbcare-liff/", {   // <-- 改成你的 Web App URL
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        userId,
-        utm_source,
-        utm_campaign,
-        utm_content
-      })
+      body: JSON.stringify({ userId, utm_source, utm_campaign, utm_content })
     });
 
-    document.getElementById("status").innerText = "資料已成功送出 ✅";
+    document.getElementById("status").innerText = "資料已送出 ✅";
+
+    // 判斷是否為好友
+    const friendship = await liff.getFriendship();
+    if (!friendship.friendFlag) {
+      document.getElementById("status").innerText = "尚未加好友，跳轉加好友頁...";
+      liff.openWindow({
+        url: "https://line.me/R/ti/p/@jbcare",
+        external: true
+      });
+    } else {
+      document.getElementById("status").innerText = "已是好友 ✅";
+    }
 
   } catch (error) {
     console.error(error);
@@ -52,7 +66,7 @@ async function main() {
   }
 }
 
-// 啟動
+// 啟動 LIFF
 main();
 </script>
 
