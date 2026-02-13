@@ -2,53 +2,67 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>JB Care LIFF</title>
+  <title>JB Care LIFF Tracker</title>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 </head>
 <body>
-<h2>載入中...</h2>
+<h2 id="status">載入中...</h2>
 
 <script>
 async function main() {
-  await liff.init({ liffId: "2009110865-FvR3qo6e" });
+  try {
+    // 初始化 LIFF
+    await liff.init({ liffId: "2009110865-FvR3qo6e" });
 
-  if (!liff.isLoggedIn()) {
-    liff.login();
-    return;
-  }
+    // 如果沒登入 LINE，跳登入
+    if (!liff.isLoggedIn()) {
+      liff.login();
+      return;
+    }
 
-  const idToken = liff.getDecodedIDToken();
-  const userId = idToken.sub;
+    document.getElementById("status").innerText = "LIFF 初始化成功 ✅";
 
-  const params = new URLSearchParams(window.location.search);
-  const utm_source = params.get("utm_source");
-  const utm_campaign = params.get("utm_campaign");
-  const utm_content = params.get("utm_content");
+    // 取得 userId
+    const idToken = liff.getDecodedIDToken();
+    const userId = idToken.sub;
 
-  // POST 到 GAS
-  await fetch("你的GAS Web App URL", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      userId,
-      utm_source,
-      utm_campaign,
-      utm_content
-    })
-  });
+    // 讀取 URL 上的 UTM 參數
+    const params = new URLSearchParams(window.location.search);
+    const utm_source = params.get("utm_source") || "";
+    const utm_campaign = params.get("utm_campaign") || "";
+    const utm_content = params.get("utm_content") || "";
 
-  // 判斷是否為好友
-  const friendship = await liff.getFriendship();
-  if (!friendship.friendFlag) {
-    liff.openWindow({
-      url: "https://line.me/R/ti/p/@jbcare",
-      external: true
+    // POST 到你的 Google Sheet Web App
+    await fetch("你的GAS Web App URL", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        userId,
+        utm_source,
+        utm_campaign,
+        utm_content
+      })
     });
-  } else {
-    document.body.innerHTML = "<h2>已是好友 ✅</h2>";
+
+    // 判斷是否為好友
+    const friendship = await liff.getFriendship();
+    if (!friendship.friendFlag) {
+      liff.openWindow({
+        url: "https://line.me/R/ti/p/@jbcare",
+        external: true
+      });
+      document.getElementById("status").innerText = "跳轉加好友頁...";
+    } else {
+      document.getElementById("status").innerText = "已是好友 ✅";
+    }
+
+  } catch (error) {
+    console.error(error);
+    document.getElementById("status").innerText = "發生錯誤，請稍後再試 ❌";
   }
 }
 
+// 啟動
 main();
 </script>
 
