@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>JB Care LIFF 完整版</title>
+  <title>JB Care LIFF 最終版</title>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <style>
     body { font-family: Arial, sans-serif; text-align: center; padding-top: 50px; }
@@ -15,6 +15,8 @@
 
 <script>
 async function main() {
+  const statusEl = document.getElementById("status");
+
   try {
     // 初始化 LIFF
     await liff.init({ liffId: "2009110865-FvR3qo6e" });
@@ -24,7 +26,7 @@ async function main() {
       return;
     }
 
-    document.getElementById("status").innerText = "LIFF 初始化成功 ✅";
+    statusEl.innerText = "LIFF 初始化成功 ✅";
 
     // 取得 userId
     const idToken = liff.getDecodedIDToken();
@@ -36,37 +38,68 @@ async function main() {
     const utm_campaign = params.get("utm_campaign") || "";
     const utm_content = params.get("utm_content") || "";
 
-    console.log("送出資料:", { userId, utm_source, utm_campaign, utm_content });
+    // Build POST data
+    const postData = {
+      userId,
+      utm_source,
+      utm_campaign,
+      utm_content
+    };
 
-    // POST 到 Google Sheet Web App
-    await fetch("https://script.google.com/macros/s/AKfycbxBh6o0xQSJl0AvKfgQAFDwQ_LVRRYIMb5Wdy_8S02WG8ih5R101IdMARsrTIm3Ht_9/exec", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId, utm_source, utm_campaign, utm_content })
-    });
+    console.log("準備傳送:", postData);
 
-    document.getElementById("status").innerText = "資料已送出 ✅";
+    // POST 到 Google Web App
+    try {
+      const response = await fetch(
+        "https://script.google.com/macros/s/AKfycbxBh6o0xQSJl0AvKfgQAFDwQ_LVRRYIMb5Wdy_8S02WG8ih5R101IdMARsrTIm3Ht_9/exec",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(postData)
+        }
+      );
 
-    // 判斷是否為好友
-    const friendship = await liff.getFriendship();
-    if (!friendship.friendFlag) {
-      document.getElementById("status").innerText = "尚未加好友，跳轉加好友頁...";
-      liff.openWindow({
-        url: "https://line.me/R/ti/p/@jbcare",
-        external: true
-      });
-    } else {
-      document.getElementById("status").innerText = "已是好友 ✅，開啟聊天室...";
-      // 開啟 LINE 聊天室
-      liff.openWindow({
-        url: "https://line.me/R/oaMessage/@jbcare", // OA 聊天室連結
-        external: true
-      });
+      if (!response.ok) {
+        const text = await response.text();
+        throw new Error(`Web App 回傳錯誤: ${text}`);
+      }
+
+      statusEl.innerText = "資料已成功送出 ✅";
+
+    } catch (fetchError) {
+      console.error("POST 錯誤:", fetchError);
+      statusEl.innerText = "資料送出失敗 ❌，請查看 console";
+      return;
+    }
+
+    // 好友判斷
+    try {
+      const friendship = await liff.getFriendship();
+
+      if (!friendship.friendFlag) {
+        statusEl.innerText = "尚未加好友，跳轉加好友頁...";
+        liff.openWindow({
+          url: "https://line.me/R/ti/p/@jbcare",
+          external: true
+        });
+
+      } else {
+        statusEl.innerText = "已是好友 ✅，開啟聊天室...";
+        // 開啟 LINE 聊天室
+        liff.openWindow({
+          url: "https://line.me/R/oaMessage/@jbcare",
+          external: true
+        });
+      }
+
+    } catch (friendErr) {
+      console.error("Friendship 判斷錯誤:", friendErr);
+      statusEl.innerText = "好友判斷失敗 ❌，請查看 console";
     }
 
   } catch (error) {
-    console.error("錯誤訊息:", error);
-    document.getElementById("status").innerText = "發生錯誤 ❌，請檢查 console";
+    console.error("LIFF 初始化錯誤:", error);
+    statusEl.innerText = "LIFF 初始化失敗 ❌，請查看 console";
   }
 }
 
