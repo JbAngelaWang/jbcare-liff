@@ -2,10 +2,10 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>JB Care LIFF 最終版</title>
+  <title>JB Care LIFF 最終版 GET</title>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <style>
-    body { font-family: Arial, sans-serif; text-align: center; padding-top: 50px; }
+    body { font-family: Arial; text-align: center; padding-top: 50px; }
     h2 { color: #333; }
   </style>
 </head>
@@ -18,88 +18,55 @@ async function main() {
   const statusEl = document.getElementById("status");
 
   try {
-    // 初始化 LIFF
     await liff.init({ liffId: "2009110865-FvR3qo6e" });
 
-    if (!liff.isLoggedIn()) {
-      liff.login();
-      return;
-    }
+    if (!liff.isLoggedIn()) { liff.login(); return; }
 
     statusEl.innerText = "LIFF 初始化成功 ✅";
 
-    // 取得 userId
     const idToken = liff.getDecodedIDToken();
     const userId = idToken.sub;
 
-    // 取得 URL UTM
     const params = new URLSearchParams(window.location.search);
     const utm_source = params.get("utm_source") || "";
     const utm_campaign = params.get("utm_campaign") || "";
     const utm_content = params.get("utm_content") || "";
 
-    // Build POST data
-    const postData = {
-      userId,
-      utm_source,
-      utm_campaign,
-      utm_content
-    };
+    // 用 GET 傳資料避免 CORS
+    const url = 'https://script.google.com/macros/s/AKfycbxBh6o0xQSJl0AvKfgQAFDwQ_LVRRYIMb5Wdy_8S02WG8ih5R101IdMARsrTIm3Ht_9/exec'
+      + '?userId=' + encodeURIComponent(userId)
+      + '&utm_source=' + encodeURIComponent(utm_source)
+      + '&utm_campaign=' + encodeURIComponent(utm_campaign)
+      + '&utm_content=' + encodeURIComponent(utm_content);
 
-    console.log("準備傳送:", postData);
-
-    // POST 到 Google Web App
     try {
-      const response = await fetch(
-        "https://script.google.com/macros/s/AKfycbxBh6o0xQSJl0AvKfgQAFDwQ_LVRRYIMb5Wdy_8S02WG8ih5R101IdMARsrTIm3Ht_9/exec",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(postData)
-        }
-      );
-
-      if (!response.ok) {
-        const text = await response.text();
-        throw new Error(`Web App 回傳錯誤: ${text}`);
-      }
-
+      const response = await fetch(url);
+      if (!response.ok) throw new Error("Web App 回傳錯誤");
       statusEl.innerText = "資料已成功送出 ✅";
-
-    } catch (fetchError) {
-      console.error("POST 錯誤:", fetchError);
-      statusEl.innerText = "資料送出失敗 ❌，請查看 console";
+    } catch(fetchErr) {
+      console.error("傳送資料錯誤:", fetchErr);
+      statusEl.innerText = "資料送出失敗 ❌，請查看 console傳送資料錯誤";
       return;
     }
 
-    // 好友判斷
+    // 判斷好友
     try {
       const friendship = await liff.getFriendship();
-
       if (!friendship.friendFlag) {
         statusEl.innerText = "尚未加好友，跳轉加好友頁...";
-        liff.openWindow({
-          url: "https://line.me/R/ti/p/@jbcare",
-          external: true
-        });
-
+        liff.openWindow({ url: "https://line.me/R/ti/p/@jbcare", external: true });
       } else {
         statusEl.innerText = "已是好友 ✅，開啟聊天室...";
-        // 開啟 LINE 聊天室
-        liff.openWindow({
-          url: "https://line.me/R/oaMessage/@jbcare",
-          external: true
-        });
+        liff.openWindow({ url: "https://line.me/R/oaMessage/@jbcare", external: true });
       }
-
-    } catch (friendErr) {
-      console.error("Friendship 判斷錯誤:", friendErr);
-      statusEl.innerText = "好友判斷失敗 ❌，請查看 console";
+    } catch(friendErr) {
+      console.error("好友判斷錯誤:", friendErr);
+      statusEl.innerText = "好友判斷失敗 ❌，請查看 console判斷好友";
     }
 
-  } catch (error) {
-    console.error("LIFF 初始化錯誤:", error);
-    statusEl.innerText = "LIFF 初始化失敗 ❌，請查看 console";
+  } catch(err) {
+    console.error("LIFF 初始化錯誤:", err);
+    statusEl.innerText = "LIFF 初始化失敗 ❌，請查看 consoleLIFF 初始化錯誤";
   }
 }
 
